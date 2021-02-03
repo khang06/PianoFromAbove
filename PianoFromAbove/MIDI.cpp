@@ -142,25 +142,35 @@ int MIDIPos::GetNextEvents( int iMicroSecs, vector< MIDIEvent* > &vEvents )
 
 MIDI::MIDI ( const wstring &sFilename )
 {
-    // Open the file
-    ifstream ifs( sFilename, ios::in | ios::binary | ios::ate );
-    if ( !ifs.is_open() )
-        return;
+    FILE *stream;
 
-    // Read it all in
-    size_t iSize = ifs.tellg();
-    unsigned char *pcMemBlock = new unsigned char[iSize];
-    ifs.seekg( 0, ios::beg );
-    ifs.read( reinterpret_cast< char* >( pcMemBlock ), iSize );
-    ifs.close();
+	// Open the file
+	if (_wfopen_s(&stream, sFilename.c_str(), L"rb") == 0) 
+	{
+		// Go to the end of the file to get the max size
+		_fseeki64(stream, 0, SEEK_END);
+		size_t iSize = static_cast<size_t>( _ftelli64(stream) );
+		unsigned char *pcMemBlock = new unsigned char[iSize];
 
-    // Parse it
-    int iTotal = ParseMIDI ( pcMemBlock, iSize );
-    m_Info.sFilename = sFilename;
-    //Util::MD5( pcMemBlock, iSize, m_Info.sMd5 );
+		// Go to the beginning of the file to prepare for parsing
+		if (_fseeki64(stream, 0, SEEK_SET))
+			MessageBoxA(NULL, "_fseeki64 encountered an error.", "Piano From Above", MB_OK | MB_ICONERROR);
+
+		// Parse the entire MIDI to memory
+		fread( reinterpret_cast< char* >( pcMemBlock ), 1, iSize, stream);
+
+		// Close the stream, since it's not needed anymore
+		fclose(stream);
+
+		// Parse it
+		size_t iTotal = ParseMIDI ( pcMemBlock, iSize );
+		m_Info.sFilename = sFilename;
+		// Util::MD5( pcMemBlock, iSize, m_Info.sMd5 );
  
-    // Clean up
-    delete[] pcMemBlock;
+		// Clean up
+		delete[] pcMemBlock;
+	}
+	else MessageBoxA(NULL, "_wfopen_s was unable to open the MIDI.", "Piano From Above", MB_OK | MB_ICONERROR);
 }
 
 MIDI::~MIDI( void )
