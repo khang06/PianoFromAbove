@@ -382,7 +382,7 @@
     <ClCompile Include="tinyxml\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\Godowsky - Study of Chopin Etude Op. 10, No. 1.mid" />
+    <None Include="Images\FunkyStars.mid" />
     <None Include="Images\Lock.bmp" />
     <None Include="Images\Mirror Small.bmp" />
     <None Include="Images\PFA Icon.ico" />

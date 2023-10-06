@@ -88,10 +88,6 @@ std::tuple<HRESULT, const char*> D3D12Renderer::Init(HWND hWnd, bool bLimitFPS) 
             //return std::make_tuple(res, "D3D12CreateDevice");
         break;
     }
-    if (m_pDevice == nullptr) {
-        MessageBoxW(NULL, L"Couldn't find a suitable D3D12 device.", L"DirectX Error", MB_ICONERROR);
-        exit(1);
-    }
 
 #ifdef _DEBUG
     // Break on errors

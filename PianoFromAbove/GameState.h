@@ -20,6 +20,7 @@ using namespace std;
 #include "Renderer.h"
 #include "MIDI.h"
 #include "Misc.h"
+#include "robin_hood.h"
 
 //Abstract base class
 class GameState
@@ -194,8 +195,7 @@ private:
 
     // Logic
     void UpdateState(int key, const thread_work_t& work);
-    void JumpTo(long long llStartTime, bool bUpdateGUI = true);
-    void PlaySkippedEvents(eventvec_t::const_iterator itOldProgramChange);
+    void JumpTo(long long llStartTime);
     void ApplyMarker(unsigned char* data, size_t size);
     void AdvanceIterators( long long llTime, bool bIsJump );
     MIDIMetaEvent* GetPrevious( eventvec_t::const_iterator &itCurrent,
@@ -219,7 +219,6 @@ private:
     void GenNoteXTable();
     float GetNoteX( int iNote );
     void RenderKeys();
-    void RenderBorder();
     void RenderText();
     void RenderStatusLine(int line, const char* left, const char* format, ...);
     void RenderStatus( LPRECT prcPos );
@@ -265,7 +264,7 @@ private:
     bool m_bTickMode = false;
 
     // FPS variables
-    bool m_bShowFPS;
+    bool m_bDebug;
     int m_iFPSCount;
     long long m_llFPSTime;
     double m_dFPS;
@@ -282,6 +281,9 @@ private:
     ChannelSettings m_csKBRed, m_csKBWhite, m_csKBSharp, m_csKBBackground;
     vector< TrackSettings > m_vTrackSettings;
     float m_pBends[16] = {};
+    boolean m_RPN_MSB[16] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+    boolean m_RPN_LSB[16] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+    boolean m_pBendsRange[16] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
     deque<tuple<long long, long long>> m_dNPSNotes;
     std::wstring m_sCurBackground;
     bool m_bBackgroundLoaded;

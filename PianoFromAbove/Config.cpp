@@ -65,7 +65,7 @@ void Config::LoadConfigValues()
     if ( sPath.length() == 0 ) return;
 
     // Load it
-    TiXmlDocument doc( sPath + "\\Config.xml" );
+    TiXmlDocument doc( sPath + "\\Config-Normal.xml" );
     if ( !doc.LoadFile() ) return;
 
     // Get the root element
@@ -75,7 +75,7 @@ void Config::LoadConfigValues()
     LoadConfigValues( txRoot );
 
     // Custom settings need to be loaded from a separate file, otherwise stock PFA will reset them
-    doc = TiXmlDocument(sPath + "\\pfavizkhang.xml");
+    doc = TiXmlDocument(sPath + "\\Config-VIZ.xml");
     if (!doc.LoadFile())
         return;
 
@@ -113,7 +113,7 @@ bool Config::SaveConfigValues()
     SaveConfigValues( txRoot );
 
     // Write it!
-    bool bStockRet = doc.SaveFile( sPath + "\\Config.xml" );
+    bool bStockRet = doc.SaveFile( sPath + "\\Config-Normal.xml" );
 
     // Same as in LoadConfigValues
     doc = TiXmlDocument();
@@ -124,7 +124,7 @@ bool Config::SaveConfigValues()
 
     m_VizSettings.SaveConfigValues(txRoot);
 
-    return bStockRet && doc.SaveFile(sPath + "\\pfavizkhang.xml");
+    return bStockRet && doc.SaveFile(sPath + "\\Config-VIZ.xml");
 }
 
 bool Config::SaveConfigValues( TiXmlElement *txRoot )
@@ -177,8 +177,8 @@ void VideoSettings::LoadDefaultValues()
 
 void ControlsSettings::LoadDefaultValues()
 {
-    this->dFwdBackSecs = 3.0;
-    this->dSpeedUpPct = 10.0;
+    this->dFwdBackSecs = 5;
+    this->dSpeedUpPct = 10;
 }
 
 void PlaybackSettings::LoadDefaultValues()
@@ -188,7 +188,7 @@ void PlaybackSettings::LoadDefaultValues()
     this->m_bPlayable = false;
     this->m_bPaused = true;
     this->m_dSpeed = 1.0;
-    this->m_dNSpeed = 1.0;
+    this->m_dNSpeed = 0.25;
     this->m_dVolume = 1.0;
 }
 
@@ -213,7 +213,7 @@ void VizSettings::LoadDefaultValues() {
     this->bTickBased = false;
     this->bShowMarkers = true;
     this->eMarkerEncoding = MarkerEncoding::CP1252;
-    this->bNerdStats = false;
+    this->bPhigros = false;
     this->sSplashMIDI = L"";
     this->bVisualizePitchBends = false;
     this->bDumpFrames = false;
@@ -367,7 +367,7 @@ void VizSettings::LoadConfigValues(TiXmlElement* txRoot) {
     if (txViz->QueryIntAttribute("ShowMarkers", &iAttrVal) == TIXML_SUCCESS)
         bShowMarkers = (iAttrVal != 0);
     if (txViz->QueryIntAttribute("NerdStats", &iAttrVal) == TIXML_SUCCESS)
-        bNerdStats = (iAttrVal != 0);
+        bPhigros = (iAttrVal != 0);
     if (txViz->QueryIntAttribute("VisualizePitchBends", &iAttrVal) == TIXML_SUCCESS)
         bVisualizePitchBends = (iAttrVal != 0);
     if (txViz->QueryIntAttribute("DumpFrames", &iAttrVal) == TIXML_SUCCESS)
@@ -472,7 +472,6 @@ bool ViewSettings::SaveConfigValues( TiXmlElement *txRoot )
 {
     TiXmlElement *txView = new TiXmlElement( "View" );
     txRoot->LinkEndChild( txView );
-    txView->SetAttribute("Library", m_bLibrary);
     txView->SetAttribute( "Controls", m_bControls );
     txView->SetAttribute( "Keyboard", m_bKeyboard );
     txView->SetAttribute( "OnTop", m_bOnTop );
@@ -493,7 +492,7 @@ bool VizSettings::SaveConfigValues(TiXmlElement* txRoot) {
     txViz->SetAttribute("TickBased", bTickBased);
     txViz->SetAttribute("ShowMarkers", bShowMarkers);
     txViz->SetAttribute("MarkerEncoding", eMarkerEncoding);
-    txViz->SetAttribute("NerdStats", bNerdStats);
+    txViz->SetAttribute("NerdStats", bPhigros);
     txViz->SetAttribute("SplashMIDI", Util::WstringToString(sSplashMIDI));
     txViz->SetAttribute("VisualizePitchBends", bVisualizePitchBends);
     txViz->SetAttribute("DumpFrames", bDumpFrames);

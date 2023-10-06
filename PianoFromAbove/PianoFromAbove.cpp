@@ -24,9 +24,6 @@
 #include "Renderer.h"
 #include "Misc.h"
 
-// Yes, I know you shouldn't store build numbers as doubles
-constexpr double BUILD_VERSION = 20231006;
-
 INT WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, INT nCmdShow );
 DWORD WINAPI GameThread( LPVOID lpParameter );
 
@@ -39,76 +36,6 @@ HWND g_hWndBar = NULL;
 HWND g_hWndGfx = NULL;
 bool g_bGfxDestroyed = false;
 TSQueue< MSG > g_MsgQueue; // Producer/consumer to hold events for our game thread
-
-DWORD WINAPI UpdateCheckProc(LPVOID) {
-    HINTERNET session = WinHttpOpen(L"pfavizkhang", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-        WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-    if (!session)
-        return 0;
-
-    HINTERNET connect = WinHttpConnect(session, L"api.github.com",
-        INTERNET_DEFAULT_HTTPS_PORT, 0);
-    if (!connect) {
-        WinHttpCloseHandle(session);
-        return 0;
-    }
-
-    HINTERNET request = WinHttpOpenRequest(connect, L"GET", L"/repos/khang06/PianoFromAbove/releases",
-        NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
-    if (!request) {
-        WinHttpCloseHandle(connect);
-        WinHttpCloseHandle(session);
-        return 0;
-    }
-
-    if (WinHttpSendRequest(request, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, NULL) &&
-        WinHttpReceiveResponse(request, NULL))
-    {
-        std::string total;
-        DWORD expected_len = 0;
-        DWORD recv_len = 0;
-        do {
-            if (!WinHttpQueryDataAvailable(request, &expected_len))
-                break;
-
-            auto old_len = total.size();
-            total.resize(old_len + expected_len);
-            if (!WinHttpReadData(request, total.data() + old_len, expected_len, &recv_len))
-                break;
-        } while (expected_len != 0 && recv_len != 0);
-
-        // Who needs a JSON library anyway
-        std::regex regex("\"tag_name\":\\s*\"([0-9.]+)\",");
-        std::smatch matches;
-        
-        if (std::regex_search(total, matches, regex)) {
-            // C locale sucks so much
-            auto old_locale = std::setlocale(LC_NUMERIC, nullptr);
-            std::setlocale(LC_NUMERIC, "C");
-            for (int i = 1; i < matches.size(); i++) {
-                double parsed = 0.0;
-                try {
-                    parsed = std::stod(matches[i].str());
-                } catch (...) {
-                    continue;
-                }
-                if (parsed > BUILD_VERSION) {
-                    auto menu = GetMenu(g_hWnd);
-                    AppendMenu(menu, MF_STRING, ID_UPDATE, L"Update available!");
-                    DrawMenuBar(g_hWnd);
-                    break;
-                }
-            }
-            std::setlocale(LC_NUMERIC, old_locale);
-        }
-    }
-
-    WinHttpCloseHandle(request);
-    WinHttpCloseHandle(connect);
-    WinHttpCloseHandle(session);
-
-    return 0;
-}
 
 //-----------------------------------------------------------------------------
 // Name: wWinMain()
@@ -179,7 +106,7 @@ INT WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdL
     }
 
     // Create the application window
-    g_hWnd = CreateWindowEx( 0, CLASSNAME, L"pfavizkhang-dx12 " __DATE__, WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, cView.GetMainLeft(), cView.GetMainTop(),
+    g_hWnd = CreateWindowEx( 0, CLASSNAME, L"PianoFromAbove VIZ | Made by: happy_mimimix | Ver 3.1.0 | Now playing: None", WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, cView.GetMainLeft(), cView.GetMainTop(),
                              cView.GetMainWidth(), cView.GetMainHeight(), NULL, NULL, wc.hInstance, NULL );
     if ( !g_hWnd ) return 1;
 
@@ -213,9 +140,6 @@ INT WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdL
     UpdateWindow( g_hWnd );
     SetFocus( g_hWndGfx );
     cPlayback.SetPaused( false, false );
-
-    // Spawn update check thread
-    CreateThread(NULL, 0, UpdateCheckProc, NULL, 0, NULL);
 
     // Enter the message loop
     MSG msg = { 0 };
@@ -267,7 +191,7 @@ DWORD WINAPI GameThread( LPVOID lpParameter )
 
     // Put the adapter in the window title
     wchar_t buf[1024] = {};
-    _snwprintf_s(buf, 1024, L"pfavizkhang-dx12 %S (Device: %s)", __DATE__, pRenderer->GetAdapterName().c_str());
+    _snwprintf_s(buf, 1024, L"PianoFromAbove VIZ | Made by: happy_mimimix | Ver 3.1.0 | Now playing: Splash MIDI");
     SetWindowTextW(g_hWnd, buf);
 
     // Event, logic, render...

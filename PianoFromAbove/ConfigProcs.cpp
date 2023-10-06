@@ -65,11 +65,11 @@ INT_PTR WINAPI VisualProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     {
         case WM_INITDIALOG:
         {
-            HWND hWndFirstKey = GetDlgItem( hWnd, IDC_FIRSTKEY );
+HWND hWndFirstKey = GetDlgItem( hWnd, IDC_FIRSTKEY );
             HWND hWndLastKey = GetDlgItem( hWnd, IDC_LASTKEY );
 
             // Enumerate the keys
-            for ( int i = MIDI::A0; i <= MIDI::C8; i++ )
+            for ( int i = 0; i < 128; i++ )
             {
                 SendMessage( hWndFirstKey, CB_ADDSTRING, i, ( LPARAM )MIDI::NoteName(i).c_str() );
                 SendMessage( hWndLastKey, CB_ADDSTRING, i, ( LPARAM )MIDI::NoteName(i).c_str() );
@@ -169,9 +169,8 @@ INT_PTR WINAPI VisualProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
                                            IsDlgButtonChecked( hWnd, IDC_SHOWCUSTOMKEYS ) == BST_CHECKED ? cVisual.Custom :
                                            cVisual.Song );
                     cVisual.bAlwaysShowControls = ( IsDlgButtonChecked( hWnd, IDC_SHOWCONTROLS ) == BST_CHECKED );
-                    cVisual.bAssociateFiles = ( IsDlgButtonChecked( hWnd, IDC_ASSOCIATEFILES ) == BST_CHECKED );
-                    cVisual.iFirstKey = (int)SendMessage( GetDlgItem( hWnd, IDC_FIRSTKEY ), CB_GETCURSEL, 0, 0 ) + MIDI::A0;
-                    cVisual.iLastKey = (int)SendMessage( GetDlgItem( hWnd, IDC_LASTKEY ), CB_GETCURSEL, 0, 0 ) + MIDI::A0;
+                    cVisual.iFirstKey = (int)SendMessage( GetDlgItem( hWnd, IDC_FIRSTKEY ), CB_GETCURSEL, 0, 0 );
+                    cVisual.iLastKey = (int)SendMessage( GetDlgItem( hWnd, IDC_LASTKEY ), CB_GETCURSEL, 0, 0 );
                     for ( int i = 0; i < IDC_COLOR6 - IDC_COLOR1 + 1; i++ )
                         cVisual.colors[i] = (int)GetWindowLongPtr( GetDlgItem( hWnd, IDC_COLOR1 + i ), GWLP_USERDATA );
                     cVisual.iBkgColor = (int)GetWindowLongPtr( GetDlgItem( hWnd, IDC_BKGCOLOR ), GWLP_USERDATA );
@@ -201,11 +200,9 @@ VOID SetVisualProc( HWND hWnd, const VisualSettings &cVisual, const VizSettings&
     // Set values
     CheckRadioButton( hWnd, IDC_SHOWALLKEYS, IDC_SHOWCUSTOMKEYS, IDC_SHOWALLKEYS + cVisual.eKeysShown );
     CheckDlgButton( hWnd, IDC_SHOWCONTROLS, cVisual.bAlwaysShowControls ? BST_CHECKED : BST_UNCHECKED );
-    CheckDlgButton( hWnd, IDC_ASSOCIATEFILES, cVisual.bAssociateFiles ? BST_CHECKED : BST_UNCHECKED );
     SendMessage( hWnd, WM_COMMAND, IDC_SHOWALLKEYS + cVisual.eKeysShown, 0 );
-    SendMessage( hWndFirstKey, CB_SETCURSEL, cVisual.iFirstKey - MIDI::A0, 0 );
-    SendMessage( hWndLastKey, CB_SETCURSEL, cVisual.iLastKey - MIDI::A0, 0 );
-
+    SendMessage( hWndFirstKey, CB_SETCURSEL, cVisual.iFirstKey, 0 );
+    SendMessage( hWndLastKey, CB_SETCURSEL, cVisual.iLastKey, 0 );
     // Colors
     for ( int i = 0; i < IDC_COLOR6 - IDC_COLOR1 + 1; i++ )
         SetWindowLongPtr( GetDlgItem( hWnd, IDC_COLOR1 + i ), GWLP_USERDATA, cVisual.colors[i] );
@@ -291,8 +288,6 @@ INT_PTR WINAPI VideoProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
             // Config to fill out the form
             Config &config = Config::GetConfig();
             const VideoSettings &cVideo = config.GetVideoSettings();
-
-            CheckRadioButton( hWnd, IDC_DIRECT3D, IDC_GDI, IDC_DIRECT3D + cVideo.eRenderer );
             CheckDlgButton( hWnd, IDC_DISPLAYFPS, cVideo.bShowFPS ? BST_CHECKED : BST_UNCHECKED );
             CheckDlgButton( hWnd, IDC_LIMITFPS, cVideo.bLimitFPS ? BST_CHECKED : BST_UNCHECKED );
 
@@ -312,11 +307,6 @@ INT_PTR WINAPI VideoProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
                     // Get a copy of the config to overwrite the settings
                     Config &config = Config::GetConfig();
                     VideoSettings cVideo = config.GetVideoSettings();
-
-                    cVideo.eRenderer = ( IsDlgButtonChecked( hWnd, IDC_DIRECT3D ) == BST_CHECKED ? cVideo.Direct3D : 
-                                         IsDlgButtonChecked( hWnd, IDC_OPENGL ) == BST_CHECKED ? cVideo.OpenGL :
-                                         IsDlgButtonChecked( hWnd, IDC_GDI ) == BST_CHECKED ? cVideo.GDI :
-                                         cVideo.Direct3D );
                     cVideo.bShowFPS = ( IsDlgButtonChecked( hWnd, IDC_DISPLAYFPS ) == BST_CHECKED );
                     cVideo.bLimitFPS = ( IsDlgButtonChecked( hWnd, IDC_LIMITFPS ) == BST_CHECKED );
 
@@ -450,7 +440,7 @@ INT_PTR WINAPI VizProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         CheckDlgButton(hWnd, IDC_TICKBASED, viz.bTickBased);
         CheckDlgButton(hWnd, IDC_MARKERS, viz.bShowMarkers);
-        CheckDlgButton(hWnd, IDC_STATS, viz.bNerdStats);
+        CheckDlgButton(hWnd, IDC_STATS, viz.bPhigros);
         CheckDlgButton(hWnd, IDC_PITCHBENDS, viz.bVisualizePitchBends);
         CheckDlgButton(hWnd, IDC_FFMPEG, viz.bDumpFrames);
         CheckDlgButton(hWnd, IDC_COLORLOOP, viz.bColorLoop);
@@ -521,7 +511,7 @@ INT_PTR WINAPI VizProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             viz.bTickBased = IsDlgButtonChecked(hWnd, IDC_TICKBASED);
             viz.bShowMarkers = IsDlgButtonChecked(hWnd, IDC_MARKERS);
             viz.eMarkerEncoding = (VizSettings::MarkerEncoding)SendMessage(GetDlgItem(hWnd, IDC_MARKERENC), CB_GETCURSEL, 0, 0);
-            viz.bNerdStats = IsDlgButtonChecked(hWnd, IDC_STATS);
+            viz.bPhigros = IsDlgButtonChecked(hWnd, IDC_STATS);
             GetWindowTextW(GetDlgItem(hWnd, IDC_SPLASHMIDI), splash, 1024);
             viz.sSplashMIDI = splash;
             GetWindowTextW(GetDlgItem(hWnd, IDC_BACKGROUND), background, 1024);
@@ -620,7 +610,7 @@ INT_PTR WINAPI TracksProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
             GetClientRect( hWndTracks, &rcTracks );
             int aFmt[6] = { LVCFMT_LEFT, LVCFMT_LEFT, LVCFMT_RIGHT, LVCFMT_CENTER, LVCFMT_CENTER, LVCFMT_CENTER };
             int aCx[6] = { 27, rcTracks.right - 27 - 55 - 50 - 50 - 50, 55, 50, 50, 50 };
-            CONST TCHAR *aText[6] = { TEXT( "Trk" ), TEXT( "Instrument" ), TEXT( "Notes" ), TEXT( "Muted" ), TEXT( "Hidden" ), TEXT( "Color" ) };
+            CONST TCHAR *aText[6] = { TEXT( "Track" ), TEXT( "Instrument" ), TEXT( "Notes" ), TEXT( "Muted" ), TEXT( "Hidden" ), TEXT( "Color" ) };
 
             LVCOLUMN lvc = { 0 };
             lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT;

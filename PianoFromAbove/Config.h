@@ -25,8 +25,6 @@
 #define CLASSNAME  TEXT( "PianoFromAbove" )
 #define GFXCLASSNAME  TEXT( "PianoFromAboveGfx" )
 #define POSNCLASSNAME  TEXT( "PianoFromAbovePosCtrl" )
-#define MINWIDTH 0
-#define MINHEIGHT 0
 
 class ISettings;
 class Config;
@@ -173,7 +171,7 @@ struct VizSettings : public ISettings {
     bool bTickBased;
     bool bShowMarkers;
     enum MarkerEncoding { CP1252, CP932, UTF8 } eMarkerEncoding;
-    bool bNerdStats;
+    bool bPhigros;
     std::wstring sSplashMIDI;
     bool bVisualizePitchBends;
     bool bDumpFrames;
