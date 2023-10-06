@@ -383,11 +383,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Images\FunkyStars.mid" />
-    <None Include="Images\Lock.bmp" />
-    <None Include="Images\Mirror Small.bmp" />
     <None Include="Images\PFA Icon.ico" />
     <None Include="Images\mediaiconssmall.bmp" />
-    <None Include="images\Welcome.ico" />
     <None Include="common.hlsli" />
   </ItemGroup>
   <ItemGroup>
