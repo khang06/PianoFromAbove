@@ -996,6 +996,7 @@ GameState::GameError MainScreen::Logic( void )
     static const VisualSettings &cVisual = config.GetVisualSettings();
     static const VideoSettings &cVideo = config.GetVideoSettings();
     static const VizSettings &cViz = config.GetVizSettings();
+
     const MIDI::MIDIInfo &mInfo = m_MIDI.GetInfo();
 
     // people are probably going to yell at me if you can't change the bar color during playback
@@ -1027,6 +1028,13 @@ GameState::GameError MainScreen::Logic( void )
     m_iStartNote = min( cVisual.iFirstKey, cVisual.iLastKey );
     m_iEndNote = max( cVisual.iFirstKey, cVisual.iLastKey );
     m_bShowFPS = cVideo.bShowFPS;
+    m_bIsKDMAPI = m_OutDevice.IsKDMAPIEnabled();
+
+    if (m_bIsKDMAPI) {
+        m_lluVoiceCount = m_OutDevice.KDMAPIActiveVoices();
+        m_pRenderTime = m_OutDevice.KDMAPIRenderingTime();
+    }
+
     if (m_bDumpFrames)
         m_pRenderer->SetLimitFPS(false);
     else if (m_Timer.m_bManualTimer)
@@ -2057,6 +2065,8 @@ void MainScreen::RenderText()
         iLines++;
     if (viz.bNerdStats)
         iLines += 2;
+    if (m_bIsKDMAPI)
+        iLines += 2;
     if (m_Timer.m_bManualTimer && !m_bDumpFrames)
         iLines++;
 
@@ -2133,6 +2143,11 @@ void MainScreen::RenderStatus(int lines)
     // Framerate
     if (m_bShowFPS && !m_bDumpFrames)
         RenderStatusLine(cur_line++, width, "FPS:", "%.1lf", m_dFPS);
+
+    if (m_bIsKDMAPI) {
+        RenderStatusLine(cur_line++, width, "Active voices:", "%llu", m_lluVoiceCount);
+        RenderStatusLine(cur_line++, width, "Render time:", "%03.2lf%%", m_pRenderTime);
+    }
 
     // Nerd stats
     if (viz.bNerdStats) {

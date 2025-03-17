@@ -337,6 +337,10 @@ public:
     bool PlayEventAcrossChannels( unsigned char cStatus, unsigned char cParam1, unsigned char cParam2, const vector< int > &vChannels );
     bool PlayEvent( unsigned char bStatus, unsigned char bParam1, unsigned char bParam2 = 0 );
 
+    bool IsKDMAPIEnabled() { return m_bIsKDMAPI; }
+    float KDMAPIRenderingTime();
+    uint64_t KDMAPIActiveVoices();
+
 private:
     static FARPROC GetOmniMIDIProc(const char* func);
     static void CALLBACK MIDIOutProc( HMIDIOUT hmo, UINT wMsg, DWORD_PTR dwInstance,
@@ -345,6 +349,8 @@ private:
     bool m_bIsOpen;
     bool m_bIsKDMAPI;
     void(WINAPI* SendDirectData)(DWORD);
+    float(WINAPI* GetRenderingTime)();
+    uint64_t(WINAPI* GetVoiceCount)();
     wstring m_sDevice;
     HMIDIOUT m_hMIDIOut;
 };

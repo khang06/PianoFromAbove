@@ -273,6 +273,9 @@ private:
 
     // Devices
     MIDIOutDevice m_OutDevice;
+    bool m_bIsKDMAPI;
+    float m_pRenderTime;
+    uint64_t m_lluVoiceCount;
 
     // Visual
     static const float SharpRatio;

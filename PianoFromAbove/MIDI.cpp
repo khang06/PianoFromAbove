@@ -1213,7 +1213,29 @@ bool MIDIOutDevice::OpenKDMAPI() {
 
     auto InitializeKDMAPIStream = (int(WINAPI*)())GetOmniMIDIProc("InitializeKDMAPIStream");
     *(FARPROC*)&SendDirectData = GetOmniMIDIProc("SendDirectData");
-    return m_bIsOpen = (SendDirectData && InitializeKDMAPIStream && InitializeKDMAPIStream());
+    *(FARPROC*)&GetVoiceCount = GetOmniMIDIProc("GetVoiceCount");
+    *(FARPROC*)&GetRenderingTime = GetOmniMIDIProc("GetRenderingTime");
+
+    m_bIsOpen = (SendDirectData && InitializeKDMAPIStream && InitializeKDMAPIStream());
+
+    if (!m_bIsOpen)
+        MessageBox(NULL, L"An error has occurred while loading KDMAPI.", L"ERROR", MB_OK | MB_SYSTEMMODAL | MB_ICONERROR);
+
+    return m_bIsOpen;
+}
+
+uint64_t MIDIOutDevice::KDMAPIActiveVoices() {
+    if (!m_bIsKDMAPI || !GetVoiceCount)
+        return 0;
+
+    return GetVoiceCount();
+}
+
+float MIDIOutDevice::KDMAPIRenderingTime() {
+    if (!m_bIsKDMAPI || !GetRenderingTime)
+        return 0;
+
+    return GetRenderingTime();
 }
 
 void MIDIOutDevice::Close()
