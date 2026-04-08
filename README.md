@@ -16,4 +16,4 @@ This is currently (much) faster than upstream viz.
 
 Once that's done, there should be a Release\PFA-1.1.0viz-x86_64.exe that you can run.
 
-Remember to WinMM patch it!
+Remember to WinMM patch it with OmniMidi https://github.com/KeppySoftware/OmniMIDI/releases

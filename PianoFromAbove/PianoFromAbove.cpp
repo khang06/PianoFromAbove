@@ -208,8 +208,14 @@ INT WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, INT nCmdShow )
     SetPlayMode( GameState::Splash );
     SetOnTop( cView.GetOnTop() );
     ShowControls( cView.GetControls() );
+    // Ensure the window is on-screen
+    RECT rcMain;
+    GetWindowRect( g_hWnd, &rcMain );
+    if ( MonitorFromRect( &rcMain, MONITOR_DEFAULTTONULL ) == NULL )
+        SetWindowPos( g_hWnd, NULL, 100, 100, 1024, 768, SWP_NOZORDER | SWP_NOACTIVATE );
+
     ShowWindow( g_hWndGfx, SW_SHOW );
-    ShowWindow( g_hWnd, nCmdShow );
+    ShowWindow( g_hWnd, ( nCmdShow == SW_SHOWMINIMIZED || nCmdShow == SW_MINIMIZE ) ? SW_SHOWNORMAL : nCmdShow );
     UpdateWindow( g_hWnd );
     SetFocus( g_hWndGfx );
     cPlayback.SetPaused( false, false );
